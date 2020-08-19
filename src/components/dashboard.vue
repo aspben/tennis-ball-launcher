@@ -77,7 +77,7 @@ export default {
         })
         .then((server) => {
           return server.getPrimaryService(
-            "19b10000-e8F2-537e-4f6c-d104768a1214"
+            "19b10000-e8f2-537e-4f6c-d104768a1214"
           );
         })
         .then((service) => {
