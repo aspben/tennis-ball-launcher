@@ -1,11 +1,34 @@
 <template>
   <h1>Ball launcher</h1>
-  <p>{{runtimeTranscription}}</p>
-  <p>Dermière commande: {{sentences[-1]}}</p>
-  <p>En fonction: {{working}}</p>
+  <svg
+    v-if="!this.working"
+    @click="this.working = true"
+    xmlns="http://www.w3.org/2000/svg"
+    height="48"
+    viewBox="0 0 24 24"
+    width="48"
+  >
+    <path d="M0 0h24v24H0z" fill="none" />
+    <path d="M8 5v14l11-7z" />
+  </svg>
+  <svg
+    v-if="this.working"
+    @click="this.working = false"
+    xmlns="http://www.w3.org/2000/svg"
+    height="48"
+    viewBox="0 0 24 24"
+    width="48"
+  >
+    <path d="M0 0h24v24H0z" fill="none" />
+    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+  </svg>
+
   <p>Vitesse = {{speed}}</p>
   <p>Délais = {{delay}}</p>
   <p>Spin = {{spin}}</p>
+
+  <div class="box">{{runtimeTranscription}}</div>
+  <p class="smallText">Dernière commande: {{sentences[0]}}</p>
 
   <button @click="connectToLauncher">Connect Ball Launcher</button>
 </template>
@@ -41,12 +64,36 @@ export default {
     connectToLauncher() {
       navigator.bluetooth
         .requestDevice({
-          acceptAllDevices: true,
+          filters: [
+            {
+              name: "LED",
+            },
+          ],
         })
         .then((device) => {
           alert("work Somehow");
           alert(device);
+          return device.gatt.connect();
         })
+        .then((server) => {
+          return server.getPrimaryService(
+            "19b10000-e8F2-537e-4f6c-d104768a1214"
+          );
+        })
+        .then((service) => {
+          return service.getCharacteristic(
+            "19b10001-e8f2-537e-4f6c-d104768a1214"
+          );
+        })
+        .then((characteristic) => {
+          // Writing 1 is the signal to reset energy expended.
+          var newValue = Uint8Array.of(1);
+          return characteristic.writeValue(newValue);
+          //return characteristic.readValue();
+        })
+        /*.then((value) => {
+          alert("char value is " + value);
+        })*/
         .catch((error) => {
           alert(error);
         });
@@ -132,7 +179,7 @@ export default {
 
       recognition.addEventListener("end", () => {
         if (this.runtimeTranscription !== "") {
-          this.sentences = [...this.sentences, this.runtimeTranscription];
+          this.sentences = [this.runtimeTranscription, ...this.sentences];
           this.processCommand(this.runtimeTranscription);
 
           this.$emit(
@@ -152,3 +199,16 @@ export default {
   },
 };
 </script>
+
+
+<style>
+.box {
+  border: 2px solid grey;
+  height: 35px;
+  border-radius: 8px;
+}
+.smallText {
+  font-size: 8px;
+  text-align: end;
+}
+</style>
