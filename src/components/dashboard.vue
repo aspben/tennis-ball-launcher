@@ -26,11 +26,14 @@
   <p>Vitesse = {{speed}}</p>
   <p>Délais = {{delay}}</p>
   <p>Spin = {{spin}}</p>
+  <p>characteristic: {{characteristic}}</p>
 
   <div class="box">{{runtimeTranscription}}</div>
   <p class="smallText">Dernière commande: {{sentences[0]}}</p>
 
   <button @click="connectToLauncher">Connect Ball Launcher</button>
+  <button @click="startLed">Start</button>
+  <button @click="stopLed">Stop</button>
 </template>
 
 <script>
@@ -49,6 +52,8 @@ export default {
     toggle: false,
     speaking: false,
     sentences: [],
+    characteristic: null,
+    service: null,
 
     speed: 5, // km/h
     delay: 2, // s entre chaque balle
@@ -61,42 +66,44 @@ export default {
     this.startSpeechRecognition();
   },
   methods: {
-    connectToLauncher() {
-      navigator.bluetooth
+    async connectToLauncher() {
+      let device = await navigator.bluetooth
         .requestDevice({
           filters: [
             {
               name: "LED",
             },
           ],
+          optionalServices: ["19b10000-e8f2-537e-4f6c-d104768a1214"]
         })
-        .then((device) => {
-          alert("work Somehow");
-          alert(device);
-          return device.gatt.connect();
-        })
-        .then((server) => {
-          return server.getPrimaryService(
-            "19b10000-e8f2-537e-4f6c-d104768a1214"
-          );
-        })
-        .then((service) => {
-          return service.getCharacteristic(
-            "19b10001-e8f2-537e-4f6c-d104768a1214"
-          );
-        })
-        .then((characteristic) => {
-          // Writing 1 is the signal to reset energy expended.
+
+        let server = await device.gatt.connect()
+        this.service = await  server.getPrimaryService("19b10000-e8f2-537e-4f6c-d104768a1214");
+        
+    },
+
+    async startLed () {
+      this.characteristic = await this.service.getCharacteristic("19b10001-e8f2-537e-4f6c-d104768a1214" );
           var newValue = Uint8Array.of(1);
-          return characteristic.writeValue(newValue);
-          //return characteristic.readValue();
-        })
-        /*.then((value) => {
-          alert("char value is " + value);
-        })*/
-        .catch((error) => {
-          alert(error);
-        });
+        this.characteristic.writeValue(newValue);
+        console.log('green on')
+
+        this.characteristic = await this.service.getCharacteristic("19b10002-e8f2-537e-4f6c-d104768a1214" );
+          var newValue = Uint8Array.of(0);
+        this.characteristic.writeValue(newValue);
+        console.log('red Off')
+    },
+
+    async stopLed () {
+      this.characteristic = await this.service.getCharacteristic("19b10001-e8f2-537e-4f6c-d104768a1214" );
+          var newValue = Uint8Array.of(0);
+        this.characteristic.writeValue(newValue);
+        console.log('green Off')
+
+        this.characteristic = await this.service.getCharacteristic("19b10002-e8f2-537e-4f6c-d104768a1214" );
+          var newValue = Uint8Array.of(1);
+        this.characteristic.writeValue(newValue);
+        console.log('red On')
     },
 
     processCommand(command) {
@@ -124,6 +131,7 @@ export default {
       );
       if (startCommand.length > 0) {
         this.working = true;
+        this.startLed()
       }
 
       let stopWords = ["stop", "Arrete", "pause"];
@@ -132,6 +140,7 @@ export default {
       );
       if (stopCommand.length > 0) {
         this.working = false;
+        this.stopLed()
       }
     },
 
