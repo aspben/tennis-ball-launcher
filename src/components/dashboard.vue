@@ -1,20 +1,25 @@
 <template>
   <h1>Ball launcher</h1>   
 
-  <div v-if="this.service">
+  <div v-if="!this.service">
     <div class="slidecontainer">
-      <div class="launcherProperty">Feed : {{convertFeed(feedSpeed)}} {{feedSpeed}} </div>
-      <input type="range" min="0" max="180" v-model="feedSpeed" @change="editFeed(feedSpeed)" class="slider feedRange" id="myRange">
+      <button class="btn" @click="minusFeed(2)"> - </button>
+      <div class="launcherProperty">Feed : {{convertFeed(feedSpeed)}} {{feedSpeed}} </div>      
+      <button class="btn" @click="addFeed(2)"> + </button>
     </div>
 
     <div class="slidecontainer">
+      <button class="btn" @click="minusSpeed(2)"> - </button>
       <div class="launcherProperty">Speed : {{ballSpeed}}</div>
-      <input type="range" min="0" max="180" v-model="ballSpeed" @change="editSpeed(ballSpeed)" class="slider oneToTen" id="myRange">
+      <button class="btn" @click="addSpeed(2)"> + </button>
+     
     </div>
 
     <div class="slidecontainer">
+      <button class="btn" @click="minusSpin(2)"> - </button>
       <div class="launcherProperty">Spin : {{spinValue}}</div>
-      <input type="range" min="0" max="180" v-model="spinValue" @change="editSpin(spinValue)" class="slider oneToTen" id="myRange">
+      <button class="btn" @click="addSpin(2)"> + </button>
+      
     </div>
 
     <div class="slidecontainer onOffSlider">
@@ -113,14 +118,64 @@ export default {
   },
 
 
+  addFeed (increment) {
+      if (this.feedSpeed < 50 ) { this.feedSpeed = 50}
+        if (this.feedSpeed <= 178) {
+          this.feedSpeed = this.feedSpeed + increment
+        }
+
+      this.editFeed(this.feedSpeed)
+    },
+
+    minusFeed (increment) {
+      
+      if (this.feedSpeed > 0) {
+          this.feedSpeed = this.feedSpeed - increment
+        }
+
+      editFeed(this.feedSpeed)
+    },
+
     async editFeed (newFeed) {
       let characteristic = await this.service.getCharacteristic("febe13d2-a623-11eb-bcbc-0242ac130002");
       await characteristic.writeValue(Uint8Array.of(newFeed));        
     },
 
+    addSpeed (increment) {
+      if (this.ballSpeed <= 178) {
+        this.ballSpeed = this.ballSpeed + increment
+      }
+
+      this.editSpin(this.ballSpeed)
+    },
+
+    minusSpeed (increment) {      
+      if (this.ballSpeed > 0) {
+          this.ballSpeed = this.ballSpeed - increment
+        }
+
+      editSpeed(this.ballSpeed)
+    },
+
     async editSpeed (newSpeed) {
       let characteristic = await this.service.getCharacteristic("0c60be4a-a624-11eb-bcbc-0242ac130002");
       await characteristic.writeValue(Uint8Array.of(newSpeed));
+    },
+
+    addSpin (increment) {
+      if (this.spinValue <= 178) {
+        this.spinValue = this.spinValue + increment
+      }
+
+      this.editSpin(this.spinValue)
+    },
+
+    minusSpin (increment) {      
+      if (this.spinValue > 0) {
+          this.spinValue = this.spinValue - increment
+        }
+
+      editSpin(this.spinValue)
     },
 
     async editSpin (newSpin) {
@@ -275,7 +330,11 @@ input[type="range"].trueFalse {
 }   
 
 .slidecontainer {
-  margin: 40px 20px 40px 20px
+  margin: 40px 20px 40px 20px;
+  display: flex;
+  align-content: center;
+  justify-content: space-around;
+
 }
 
 .onOffSlider {
@@ -287,7 +346,8 @@ input[type="range"].trueFalse {
 .launcherProperty {
   text-align: left;
   font-size:large;
-  margin: 16px;
+  display:flex;
+  align-self: center;
 }
 
 input[type="range"]:focus {
@@ -297,6 +357,7 @@ input[type="range"]:focus {
 
 /* SLIDER THUMB -> represented by the orange ball in the design */
 /* Webkit based browsers (chrome, opera, ...) */
+
 input[type="range"]::-webkit-slider-thumb {
      /* Removes the default styling */
     -webkit-appearance: none;
@@ -446,7 +507,6 @@ input[type="range"].trueFalse::before {
 }
 
 .btn {
-
     background-color: #fd8421;
     border-radius: 20px;
     box-shadow: 
@@ -458,7 +518,7 @@ input[type="range"].trueFalse::before {
 
   position: relative;
   display: block;
-  margin: 30px auto;
+  margin: 30px 8px;
   padding: 12px 24px;
   overflow: hidden;
   border-width: 0;
@@ -468,6 +528,8 @@ input[type="range"].trueFalse::before {
   
   transition: background-color .3s;
 }
+
+
 
 .speech button { 
   display: inline-block;
