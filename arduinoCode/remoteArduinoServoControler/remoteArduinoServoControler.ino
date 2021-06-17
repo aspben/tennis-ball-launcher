@@ -54,6 +54,7 @@ void setup() {
  spinServo.attach(5);
 
  pinMode(6, OUTPUT);
+ digitalWrite(6,HIGH);
  
  
 
@@ -128,11 +129,11 @@ void loop() {
         Serial.println(oscillateCharacteristic.value());
         
         if (oscillateCharacteristic.value() == 0 ) {
-          digitalWrite(6,LOW);
+          digitalWrite(6,HIGH);
         }
           
         if (oscillateCharacteristic.value() == 1) {
-          digitalWrite(6,HIGH);
+          digitalWrite(6,LOW);
         }       
       }
 

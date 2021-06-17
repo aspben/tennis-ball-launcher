@@ -1,7 +1,7 @@
 <template>
   <h1>Ball launcher</h1>   
 
-  <div v-if="!this.service">
+  <div v-if="this.service">
     <div class="slidecontainer">
       <button class="btn" @click="minusFeed(2)"> - </button>
       <div class="launcherProperty">Feed : {{convertFeed(feedSpeed)}} {{feedSpeed}} </div>      
@@ -133,7 +133,7 @@ export default {
           this.feedSpeed = this.feedSpeed - increment
         }
 
-      editFeed(this.feedSpeed)
+      this.editFeed(this.feedSpeed)
     },
 
     async editFeed (newFeed) {
@@ -154,7 +154,7 @@ export default {
           this.ballSpeed = this.ballSpeed - increment
         }
 
-      editSpeed(this.ballSpeed)
+      this.editSpeed(this.ballSpeed)
     },
 
     async editSpeed (newSpeed) {
@@ -175,7 +175,7 @@ export default {
           this.spinValue = this.spinValue - increment
         }
 
-      editSpin(this.spinValue)
+      this.editSpin(this.spinValue)
     },
 
     async editSpin (newSpin) {
